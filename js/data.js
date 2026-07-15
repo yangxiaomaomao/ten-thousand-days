@@ -179,7 +179,7 @@ const NODES = [
     secret:'其实一万天只是个开始，我想陪你过第二万天、第三万天……直到数不清为止。' },
 
   /* ================= 未来憧憬（无固定日期，梦想中） ================= */
-  { id:'f_wedding', type:'future', title:'穿上婚纱', icon:'🚗', color:'#b39ddb', noPhoto:true,
+  { id:'f_car', type:'future', title:'买辆属于我们的车', icon:'🚗', color:'#b39ddb', noPhoto:true,
     story:'恭喜您俩，成为尊贵的小米/沃尔沃/梅赛德斯奔驰车主！' },
   { id:'f_wedding', type:'future', title:'穿上婚纱', icon:'💒', color:'#ffd6e7', noPhoto:true,
     story:'噔噔蹬蹬，噔噔蹬蹬，你愿意嫁给他吗，我愿意，你愿意娶她为妻吗，我愿意！' },
