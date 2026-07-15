@@ -529,7 +529,7 @@
       if (tip) { tip.remove(); return; }
       tip = document.createElement('div');
       tip.className = 'zodiac-tip';
-      tip.innerHTML = '宝宝是温柔又浪漫的 <b>双鱼座 ♓</b>，生肖属 <b>兔 🐰</b>——<br>天生的小可爱，心思细腻爱幻想，是我要宠一辈子的小仙女～';
+      tip.innerHTML = '宝宝是温柔又浪漫的 <b>双鱼座 ♓</b>，生肖属 <b>兔 🐰</b>——<br>小兔子，白又白，两只耳朵竖起来~';
       $('#stage').appendChild(tip);
       setTimeout(() => { if (tip) tip.remove(); }, 6000);
     });
