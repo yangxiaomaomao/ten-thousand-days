@@ -125,7 +125,7 @@ const NODES = [
   { id:'b_harbin',  type:'branch', date:'2023-12-29', title:'哈尔滨跨年', icon:'❄️', color:'#9bf6ff', photo:'20231229.jpg',
     story:'来哈尔滨跨年啦，冰雪大世界超级美！' },
 
-  { id:'surgery', type:'main', date:'2024-02-19', title:'第一次手术', icon:'🏥', color:'#ffadad', noPhoto:true,
+  { id:'surgery', type:'main', date:'2024-02-07', title:'第一次手术', icon:'🏥', color:'#ffadad', noPhoto:true,
     story:'宝宝出生第 {{day}} 天，你经历了第一次手术——胆囊手术。\n往后余生，再不缺席',
     secret:'呜呜呜~~' },
 
