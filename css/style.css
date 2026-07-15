@@ -185,6 +185,12 @@ body{
 .nl-item .nl-name{flex:1; line-height:1.1;}
 .nl-item .nl-pct{font-size:11px; color:var(--purple); font-family:"Baloo 2";}
 
+/* 星空主题：hover/选中项底色是固定浅粉，需强制深色文字，避免与浅色主题字撞色看不清 */
+body[data-theme="starry"] .nl-item:hover,
+body[data-theme="starry"] .nl-item.active{color:#5a3a52;}
+body[data-theme="starry"] .nl-item:hover .nl-pct,
+body[data-theme="starry"] .nl-item.active .nl-pct{color:#b3417a;}
+
 .hint{font-size:11px; color:var(--ink-soft); text-align:center; line-height:1.5;}
 
 /* ===================== 舞台 ===================== */
@@ -304,10 +310,10 @@ body{
 }
 .detail-card::-webkit-scrollbar{width:6px;}
 .detail-card::-webkit-scrollbar-thumb{background:#ffc8dd; border-radius:3px;}
-.detail-back{position:absolute; top:14px; left:14px; border:none; cursor:pointer; font-family:inherit;
+.detail-back{position:absolute; top:14px; left:14px; border:none; cursor:pointer; font-family:inherit; z-index:6;
   font-size:14px; color:var(--pink-deep); background:#fff0f6; padding:8px 14px; border-radius:20px; box-shadow:var(--shadow);}
 .detail-back:active{transform:scale(.94);}
-.tape{position:absolute; width:90px; height:26px; background:rgba(255,224,138,.7); top:-8px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+.tape{position:absolute; width:90px; height:26px; background:rgba(255,224,138,.7); top:-8px; box-shadow:0 2px 6px rgba(0,0,0,.1); pointer-events:none; z-index:1;}
 .tape-l{left:26px; transform:rotate(-8deg);}
 .tape-r{right:26px; transform:rotate(7deg);}
 .detail-icon{font-size:56px; animation:beat 1.6s ease-in-out infinite;}
@@ -322,6 +328,21 @@ body{
 .detail-photo img{width:100%; height:auto; display:block; border-radius:12px;}
 .detail-story{font-size:17px; line-height:2; color:var(--ink); white-space:pre-line; margin:8px 4px 4px; text-align:left;}
 .detail-foot{margin-top:16px; font-size:14px; color:var(--pink-deep);}
+.detail-swipe-hint{margin-top:8px; font-size:12px; color:var(--ink-soft); opacity:.75;}
+
+/* 详情页左右切换箭头 */
+.detail-nav{position:absolute; top:50%; transform:translateY(-50%); z-index:6; border:none; cursor:pointer;
+  width:38px; height:38px; border-radius:50%; font-size:26px; line-height:1; color:var(--pink-deep);
+  background:#fff0f6; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; padding:0;}
+.detail-nav.prev{left:8px;}
+.detail-nav.next{right:8px;}
+.detail-nav:active{transform:translateY(-50%) scale(.9);}
+
+/* 切换时的滑入动画 */
+@keyframes slideL{from{opacity:.3; transform:translateX(46px);} to{opacity:1; transform:translateX(0);}}
+@keyframes slideR{from{opacity:.3; transform:translateX(-46px);} to{opacity:1; transform:translateX(0);}}
+.detail-card.slide-l{animation:slideL .28s ease;}
+.detail-card.slide-r{animation:slideR .28s ease;}
 
 /* 提示 */
 .scroll-tip{position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:8;
@@ -611,6 +632,9 @@ body[data-theme="starry"] .meteor{animation:shoot 1.1s ease-in forwards;}
   border-color:#ff8fb1;
 }
 .station.love-era .label .lb-title{color:var(--red,#e63946);}
+.station.love-era .label .lb-day{color:#9c4f6b;}
+.station.love-era .label .lb-pct{color:#e63946;}
+.station.love-era .label .lb-more{color:#c07a92;}
 .love-divider{
   position:absolute; top:0; height:100%; width:3px; z-index:1;
   background:repeating-linear-gradient(180deg, var(--pink-deep) 0 8px, transparent 8px 18px);

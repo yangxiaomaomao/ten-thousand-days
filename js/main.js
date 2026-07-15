@@ -298,17 +298,19 @@
   }
 
   // ---------- 详情页 ----------
-  function openDetail(id) { location.hash = '#/node/' + id; }
-  function closeDetail() { if (location.hash.startsWith('#/node/')) history.back(); else renderRoute(); }
-
+  let detailIndex = -1;              // 当前详情对应的节点下标（-1 = 未打开）
   let iconClicks = 0, iconTimer = null;
 
-  function renderRoute() {
-    const m = location.hash.match(/#\/node\/(.+)/);
+  function openDetail(id) {
+    const i = NODES.findIndex(x => x.id === id);
+    if (i >= 0) showDetail(i);
+  }
+
+  function showDetail(i) {
+    i = Math.max(0, Math.min(N - 1, i));
+    const n = NODES[i];
+    detailIndex = i;
     const detail = $('#detail'), card = $('#detailCard');
-    if (!m) { detail.classList.add('hidden'); return; }
-    const n = NODES.find(x => x.id === m[1]);
-    if (!n) { detail.classList.add('hidden'); return; }
 
     card.className = 'detail-card ' + n.type;
     $('#detailIcon').textContent = n.icon;
@@ -334,8 +336,27 @@
     $('#secretBubble').classList.add('hidden');
 
     detail.classList.remove('hidden');
-    const idx = NODES.indexOf(n);
-    if (idx >= 0) focusNode(idx);
+    card.scrollTop = 0;
+
+    // 背景镜头同步到当前事件——这样点“返回旅程”后就停在切换后的事件上
+    focusNode(i);
+  }
+
+  // 左右切换到相邻事件
+  function detailNav(dir) {
+    if (detailIndex < 0) return;
+    const i = Math.max(0, Math.min(N - 1, detailIndex + dir));
+    if (i === detailIndex) return;
+    showDetail(i);
+    const card = $('#detailCard');
+    card.classList.remove('slide-l', 'slide-r');
+    void card.offsetWidth;               // 触发重排以重放动画
+    card.classList.add(dir > 0 ? 'slide-l' : 'slide-r');
+  }
+
+  function closeDetail() {
+    $('#detail').classList.add('hidden');
+    detailIndex = -1;
   }
 
   // ---------- 照片：预置 + 本地上传 ----------
@@ -723,7 +744,12 @@
         if (tm && !tm.classList.contains('hidden')) { tm.classList.add('hidden'); return; }
         if (sm && !sm.classList.contains('hidden')) { sm.classList.add('hidden'); return; }
       }
-      if (!$('#detail').classList.contains('hidden')) { if (e.key === 'Escape') closeDetail(); return; }
+      if (!$('#detail').classList.contains('hidden')) {
+        if (e.key === 'Escape') closeDetail();
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') detailNav(1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') detailNav(-1);
+        return;
+      }
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { stopPlay(); focusNode(focus + 1); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { stopPlay(); focusNode(focus - 1); }
       else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
@@ -741,6 +767,41 @@
     });
   }
 
+  // ---------- 详情页左右滑动切换 ----------
+  function bindDetailSwipe() {
+    const card = $('#detailCard');
+    let sx = 0, sy = 0, tracking = false, dx = 0, horiz = false;
+
+    const start = e => {
+      tracking = true; horiz = false; dx = 0;
+      const t = e.touches ? e.touches[0] : e;
+      sx = t.clientX; sy = t.clientY;
+    };
+    const move = e => {
+      if (!tracking) return;
+      const t = e.touches ? e.touches[0] : e;
+      dx = t.clientX - sx;
+      const dy = t.clientY - sy;
+      if (!horiz && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) horiz = true;
+      if (horiz) { card.style.transition = 'none'; card.style.transform = `translateX(${dx}px)`; }
+    };
+    const end = () => {
+      if (!tracking) return;
+      tracking = false;
+      card.style.transition = '';
+      card.style.transform = '';
+      if (horiz && Math.abs(dx) > 60) detailNav(dx < 0 ? 1 : -1);
+      dx = 0; horiz = false;
+    };
+
+    card.addEventListener('touchstart', start, { passive: true });
+    card.addEventListener('touchmove', move, { passive: true });
+    card.addEventListener('touchend', end);
+    card.addEventListener('mousedown', start);
+    window.addEventListener('mousemove', e => { if (tracking) move(e); });
+    window.addEventListener('mouseup', end);
+  }
+
   // ---------- 初始化 ----------
   function boot() {
     buildStations();
@@ -756,7 +817,7 @@
     ambientHearts();
 
     bindDrag(); bindKeys(); bindMusic(); bindTheme(); bindZodiac(); bindEasterEgg();
-    bindTimeMachine(); bindShare();
+    bindTimeMachine(); bindShare(); bindDetailSwipe();
 
     $('#prevBtn').addEventListener('click', () => { stopPlay(); focusNode(focus - 1); });
     $('#nextBtn').addEventListener('click', () => { stopPlay(); focusNode(focus + 1); });
@@ -765,6 +826,8 @@
     $('#speedBtn').textContent = PLAY_SPEEDS[speedIdx] + 'x';
     $('#restartBtn').addEventListener('click', () => { stopPlay(); focusNode(0); });
     $('#detailBack').addEventListener('click', closeDetail);
+    $('#detailPrev').addEventListener('click', () => detailNav(-1));
+    $('#detailNext').addEventListener('click', () => detailNav(1));
     $('#detail').addEventListener('click', e => { if (e.target.id === 'detail') closeDetail(); });
     $('#uploadBtn').addEventListener('click', () => $('#photoInput').click());
     $('#photoInput').addEventListener('change', e => handleUpload(e.target.files[0]));
@@ -772,9 +835,7 @@
       if (currentPhotoNode) { localStorage.removeItem(photoKey(currentPhotoNode.id)); renderPhoto(currentPhotoNode); }
     });
 
-    window.addEventListener('hashchange', renderRoute);
     window.addEventListener('resize', computeLayout);
-    renderRoute();
   }
 
   $('#startBtn').addEventListener('click', () => {
