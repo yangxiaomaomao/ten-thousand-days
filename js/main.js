@@ -230,6 +230,9 @@
     updatePathFill();
     updateReadout(NODES[i]);
 
+    // 一旦离开起点，就把底部提示条藏起来——避免和星座角标 / 海底捞按钮重叠
+    if (i !== 0) { const tip = $('#scrollTip'); if (tip) tip.classList.add('hidden'); }
+
     if (NODES[i].special === 'finale') triggerFinale();
 
     const active = $('.nl-item.active');
@@ -366,31 +369,19 @@
   function renderPhoto(n) {
     currentPhotoNode = n;
     const box = $('#detailPhoto'), actions = $('#photoActions');
-    const uploadBtn = $('#uploadBtn'), removeBtn = $('#removePhotoBtn');
     box.innerHTML = '';
 
-    if (n.noPhoto) { box.style.display = 'none'; actions.style.display = 'none'; return; }
-    box.style.display = ''; actions.style.display = 'flex';
+    // 不再提供上传功能：统一隐藏操作按钮，保证手机 / 桌面端完全一致
+    if (actions) actions.style.display = 'none';
 
-    const uploaded = localStorage.getItem(photoKey(n.id));
-    if (n.photo) {
-      // 预置图片（我方提交，所有人可见）
-      const img = new Image();
-      img.onerror = () => { box.textContent = '📷 图片待放入 photos/' + n.photo; };
-      img.onload = () => { box.innerHTML = ''; box.appendChild(img); };
-      img.src = 'photos/' + n.photo;
-      uploadBtn.classList.add('hidden'); removeBtn.classList.add('hidden');
-    } else if (uploaded) {
-      const img = new Image(); img.src = uploaded; box.appendChild(img);
-      const tag = document.createElement('div'); tag.className = 'photo-mine-tag'; tag.textContent = '我的上传';
-      box.appendChild(tag);
-      uploadBtn.textContent = '🔄 换一张';
-      uploadBtn.classList.remove('hidden'); removeBtn.classList.remove('hidden');
-    } else {
-      box.textContent = '📷 这里还没有照片，点下面「上传照片」放一张吧～';
-      uploadBtn.textContent = '📤 上传照片';
-      uploadBtn.classList.remove('hidden'); removeBtn.classList.add('hidden');
-    }
+    // 无图节点，或没有预置图片的节点，都不显示图位
+    if (n.noPhoto || !n.photo) { box.style.display = 'none'; return; }
+
+    box.style.display = '';
+    const img = new Image();
+    img.onerror = () => { box.textContent = '📷 图片待放入 photos/' + n.photo; };
+    img.onload = () => { box.innerHTML = ''; box.appendChild(img); };
+    img.src = 'photos/' + n.photo;
   }
 
   function handleUpload(file) {
@@ -714,10 +705,18 @@
       if (!dragging) return;
       dragging = false;
       const delta = dragCur - dragBase;
-      const targetWorldX = xs[focus] - delta;
-      let best = 0, bd = Infinity;
-      for (let i = 0; i < N; i++) { const d = Math.abs(xs[i] - targetWorldX); if (d < bd) { bd = d; best = i; } }
-      focusNode(best);
+      let best;
+      if (Math.abs(delta) < 8) {
+        best = focus;                          // 位移极小 → 视为点击，不移动
+      } else {
+        // 先按落点找最近站
+        const targetWorldX = xs[focus] - delta;
+        best = 0; let bd = Infinity;
+        for (let i = 0; i < N; i++) { const d = Math.abs(xs[i] - targetWorldX); if (d < bd) { bd = d; best = i; } }
+        // 轻扫也能翻页：只要方向明确、位移超过 30px，就至少前进 / 后退一站
+        if (best === focus && Math.abs(delta) > 30) best = focus + (delta < 0 ? 1 : -1);
+      }
+      focusNode(Math.max(0, Math.min(N - 1, best)));
       setTimeout(() => moved = false, 50);
     };
     stage.addEventListener('mousedown', down);
@@ -770,10 +769,10 @@
   // ---------- 详情页左右滑动切换 ----------
   function bindDetailSwipe() {
     const card = $('#detailCard');
-    let sx = 0, sy = 0, tracking = false, dx = 0, horiz = false;
+    let sx = 0, sy = 0, tracking = false, dx = 0, horiz = false, decided = false;
 
     const start = e => {
-      tracking = true; horiz = false; dx = 0;
+      tracking = true; horiz = false; decided = false; dx = 0;
       const t = e.touches ? e.touches[0] : e;
       sx = t.clientX; sy = t.clientY;
     };
@@ -782,24 +781,68 @@
       const t = e.touches ? e.touches[0] : e;
       dx = t.clientX - sx;
       const dy = t.clientY - sy;
-      if (!horiz && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) horiz = true;
-      if (horiz) { card.style.transition = 'none'; card.style.transform = `translateX(${dx}px)`; }
+      // 首次移动就锁定方向：横向手势才切换，纵向手势保持正常滚动
+      if (!decided && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        decided = true;
+        horiz = Math.abs(dx) > Math.abs(dy);
+      }
+      if (horiz) {
+        if (e.cancelable) e.preventDefault();   // 阻止页面纵向滚动，滑动才跟手
+        card.style.transition = 'none';
+        card.style.transform = `translateX(${dx}px)`;
+      }
     };
     const end = () => {
       if (!tracking) return;
       tracking = false;
       card.style.transition = '';
       card.style.transform = '';
-      if (horiz && Math.abs(dx) > 60) detailNav(dx < 0 ? 1 : -1);
-      dx = 0; horiz = false;
+      if (horiz && Math.abs(dx) > 45) detailNav(dx < 0 ? 1 : -1);
+      dx = 0; horiz = false; decided = false;
     };
 
     card.addEventListener('touchstart', start, { passive: true });
-    card.addEventListener('touchmove', move, { passive: true });
+    card.addEventListener('touchmove', move, { passive: false });
     card.addEventListener('touchend', end);
+    card.addEventListener('touchcancel', end);
     card.addEventListener('mousedown', start);
     window.addEventListener('mousemove', e => { if (tracking) move(e); });
     window.addEventListener('mouseup', end);
+  }
+
+  // ---------- 进度条拖动 / 点击 → 定位到最近的事件 ----------
+  function bindProgressDrag() {
+    const track = $('.progress-track');
+    if (!track) return;
+    let dragging = false;
+
+    const pick = e => {
+      const t = e.touches ? e.touches[0] : e;
+      const r = track.getBoundingClientRect();
+      const horizontal = r.width > r.height;      // 手机上是横向进度条，桌面是纵向
+      let f = horizontal ? (t.clientX - r.left) / r.width : (t.clientY - r.top) / r.height;
+      f = Math.max(0, Math.min(1, f));
+      const targetPct = f * 100;
+      // 找 pct 最接近的事件（跳过没有百分比的“未来”节点）
+      let best = 0, bd = Infinity;
+      NODES.forEach((n, i) => {
+        if (n.type === 'future') return;
+        const d = Math.abs((n.pct || 0) - targetPct);
+        if (d < bd) { bd = d; best = i; }
+      });
+      stopPlay();
+      focusNode(best);
+    };
+    const down = e => { dragging = true; track.classList.add('dragging'); pick(e); if (e.cancelable) e.preventDefault(); };
+    const move = e => { if (dragging) pick(e); };
+    const upFn = () => { dragging = false; track.classList.remove('dragging'); };
+
+    track.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', upFn);
+    track.addEventListener('touchstart', down, { passive: false });
+    track.addEventListener('touchmove', move, { passive: false });
+    track.addEventListener('touchend', upFn);
   }
 
   // ---------- 初始化 ----------
@@ -817,7 +860,7 @@
     ambientHearts();
 
     bindDrag(); bindKeys(); bindMusic(); bindTheme(); bindZodiac(); bindEasterEgg();
-    bindTimeMachine(); bindShare(); bindDetailSwipe();
+    bindTimeMachine(); bindShare(); bindDetailSwipe(); bindProgressDrag();
 
     $('#prevBtn').addEventListener('click', () => { stopPlay(); focusNode(focus - 1); });
     $('#nextBtn').addEventListener('click', () => { stopPlay(); focusNode(focus + 1); });
