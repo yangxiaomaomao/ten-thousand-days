@@ -654,7 +654,7 @@
     else x.fillText(`距离第 10000 天，还剩 ${TOTAL_DAYS - td} 天`, W / 2, 620);
 
     // 浪漫句子
-    const lines = ['从 1999.03.03 到 2026.07.19', '一万天里最好的事，', '是遇见你，然后爱上你。', '往后余生，风雪是你，', '平淡是你，清贫是你，', '荣华是你，目光所至，也是你。'];
+    const lines = ['从 1999.03.03 到 2026.07.19', '一万天里最好的事，', '是遇见你，然后爱上你。', '肖娅，', '我爱你'];
     x.fillStyle = '#6b4a5a';
     x.font = '27px "PingFang SC","Microsoft YaHei",sans-serif';
     lines.forEach((ln, i) => x.fillText(ln, W / 2, 700 + i * 52));
