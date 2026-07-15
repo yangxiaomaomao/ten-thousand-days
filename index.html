@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#ffd6e7" />
+<title>宝宝的一万天 ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ======================= 开场信封 ======================= -->
+<div id="intro">
+  <div class="intro-sky"></div>
+  <div class="envelope">
+    <div class="env-flap"></div>
+    <div class="env-body">
+      <div class="env-letter">
+        <div class="env-emoji">💌</div>
+        <h1>宝宝的一万天</h1>
+        <p>1999.03.03 &nbsp;→&nbsp; 2026.07.19</p>
+        <p class="env-sub">一段藏了 10000 天的浪漫，为你准备好啦～</p>
+      </div>
+    </div>
+    <button id="startBtn">✨ 开启一万天之旅 ✨</button>
+  </div>
+</div>
+
+<!-- ======================= 主体 ======================= -->
+<div id="app" class="hidden">
+
+  <!-- 左侧 / 顶部控制面板 -->
+  <aside id="panel">
+    <div class="brand">
+      <span class="brand-emoji">🎀</span>
+      <div>
+        <div class="brand-title">宝宝的一万天</div>
+        <div class="brand-sub">A Journey of 10000 Days</div>
+      </div>
+    </div>
+
+    <div class="progress-block">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-heart" id="progressHeart">💗</div>
+      </div>
+      <div class="progress-readout">
+        <div class="day-count"><span id="dayCount">0</span><span class="unit">天</span></div>
+        <div class="pct-count" id="pctCount">0.00%</div>
+        <div class="node-date" id="nodeDate">1999.03.03</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl" id="prevBtn" title="上一站">⟪</button>
+      <button class="ctrl play" id="playBtn" title="自动巡航 / 暂停">▶</button>
+      <button class="ctrl" id="nextBtn" title="下一站">⟫</button>
+      <button class="ctrl speed" id="speedBtn" title="播放速度（点击切换）">1x</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl wide" id="restartBtn" title="回到起点">↺ 重新开始</button>
+      <button class="ctrl" id="themeBtn" title="切换风格">🎨</button>
+      <button class="ctrl" id="musicBtn" title="背景音乐">🔈</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl wide" id="timeMachineBtn" title="时光机：任意一天是第几天">⏳ 时光机</button>
+      <button class="ctrl wide" id="shareBtn" title="生成分享海报">📸 生成海报</button>
+    </div>
+
+    <div class="node-list" id="nodeList"></div>
+
+    <div class="hint">💡 拖动 · 方向键 · 滚轮 移动镜头 · 点节点看故事 · 详情页头像连点 5 下有惊喜</div>
+  </aside>
+
+  <!-- 舞台 -->
+  <main id="stage">
+    <div id="bg">
+      <div class="sun"></div>
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+      <div class="cloud c4"></div>
+      <div class="stars" id="stars"></div>
+      <div class="meteors" id="meteors"></div>
+    </div>
+
+    <div id="world">
+      <svg id="pathSvg" preserveAspectRatio="none">
+        <path id="pathBase" fill="none" />
+        <path id="pathFill" fill="none" />
+      </svg>
+      <div id="stations"></div>
+    </div>
+
+    <div id="particles"></div>
+    <div class="scroll-tip" id="scrollTip">👉 点击右侧箭头，或拖动画面，继续旅程</div>
+
+    <!-- 不起眼角落：星座 + 属相 -->
+    <div class="zodiac-corner" id="zodiacCorner" title="双鱼座 · 兔宝宝">
+      <span class="z-sign">♓</span>
+      <span class="z-txt">双鱼座 · 🐰兔</span>
+    </div>
+
+    <!-- 主题切换浮层 -->
+    <div class="theme-pop hidden" id="themePop"></div>
+  </main>
+
+  <!-- 节点详情页 -->
+  <div id="detail" class="hidden">
+    <div class="detail-card" id="detailCard">
+      <button class="detail-back" id="detailBack">← 返回旅程</button>
+      <div class="tape tape-l"></div>
+      <div class="tape tape-r"></div>
+      <div class="detail-icon" id="detailIcon">💕</div>
+      <div class="detail-day" id="detailDayWrap">宝宝出生第 <span id="detailDay">0</span> 天</div>
+      <h2 id="detailTitle">标题</h2>
+      <div class="detail-meta">
+        <span id="detailDate">2022.10.25</span>
+        <span class="dot">·</span>
+        <span id="detailPct">0%</span>
+      </div>
+      <div class="detail-photo" id="detailPhoto"></div>
+      <div class="photo-actions" id="photoActions">
+        <input type="file" id="photoInput" accept="image/*" hidden />
+        <button class="photo-btn" id="uploadBtn">📤 上传照片</button>
+        <button class="photo-btn ghost hidden" id="removePhotoBtn">🗑 删除我上传的</button>
+      </div>
+      <p class="detail-story" id="detailStory"></p>
+      <div class="secret-bubble hidden" id="secretBubble"></div>
+      <div class="detail-foot">💖 to my baby 💖</div>
+    </div>
+  </div>
+
+  <!-- 时光机弹窗 -->
+  <div id="timeMachine" class="modal-mask hidden">
+    <div class="tm-card">
+      <button class="modal-close" id="tmClose">✕</button>
+      <div class="tm-emoji">⏳</div>
+      <h3>时光机</h3>
+      <p class="tm-tip">选一个日子，看看那天是宝宝来到世界的第几天～</p>
+      <input type="date" id="tmDate" min="1999-03-03" />
+      <button class="tm-go" id="tmGo">✨ 穿越一下</button>
+      <div class="tm-result hidden" id="tmResult"></div>
+    </div>
+  </div>
+
+  <!-- 分享海报弹窗 -->
+  <div id="shareModal" class="modal-mask hidden">
+    <div class="share-card">
+      <button class="modal-close" id="shareClose">✕</button>
+      <h3>💌 生成一张浪漫海报</h3>
+      <p class="tm-tip">可保存到相册，发给宝宝或分享朋友圈～</p>
+      <div class="share-preview" id="sharePreview"></div>
+      <div class="share-actions">
+        <button class="tm-go" id="shareDownload">⬇️ 保存图片</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<audio id="bgm" loop preload="none" src="assets/bgm.mp3"></audio>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
