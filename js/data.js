@@ -129,7 +129,7 @@ const NODES = [
     story:'宝宝出生第 {{day}} 天，你经历了第一次手术——胆囊手术。\n往后余生，再不缺席',
     secret:'呜呜呜~~' },
 
-  { id:'firsthome', type:'main', date:'2024-04-16', title:'北京第一个家', icon:'🏠', color:'#ffb3c6', noPhoto:true,
+  { id:'firsthome', type:'main', date:'2024-04-16', title:'北京第一个家', icon:'🏠', color:'#ffb3c6', photo:'20240416.jpg',
     story:'宝宝出生第 {{day}} 天，我们在白家疃有了第一个家。\n虽然不大，却装满了温柔的烟火气——\n从此漂泊的城市里，有了一盏专门为我们俩亮着的灯。' },
 
   { id:'master', type:'main', date:'2025-05-08', title:'硕士答辩', icon:'📚', color:'#9bf6ff', noPhoto:true,
